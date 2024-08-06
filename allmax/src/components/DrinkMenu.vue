@@ -119,8 +119,8 @@ const cancelEdit = () => {
       <table class="table table-hover align-middle">
         <thead>
           <tr>
-            <th scope="col" width="30%">品項</th>
-            <th scope="col">說明</th>
+            <th scope="col" width="50%">品項</th>
+             
             <th scope="col">價格</th>
             <th scope="col" width="15%" class="text-center">庫存</th> 
             <th scope="col">刪除</th>
@@ -130,7 +130,7 @@ const cancelEdit = () => {
           <tr :class="{ selected: TempItem.name === item.name }">
             <td>
               
-              <span>{{ item.name }}</span>
+              <span class="fw-bold">{{ item.name }}</span>
               <button
                 type="button"
                 class="btn btn-sm ms-3 edit-btn bg-white"
@@ -144,12 +144,12 @@ const cancelEdit = () => {
                 <button type="button" class="btn border bg-white btn-sm" @click.prevent="cancelEdit">取消</button>
               </div>
              
+              <div class="mt-1">
+                <small class="opacity-50 ">{{ item.info }}</small>
+              </div>
               
+            </td>
             
-            </td>
-            <td>
-              {{ item.info }}
-            </td>
              
             <td>{{ item.price }}</td>
             <td>
