@@ -1,57 +1,79 @@
 <script setup>
 import { ref } from 'vue'
 import 'bootstrap'
+ 
 const TempItem = ref([
   {
     id: '',
     name: '',
-    infomation: '',
+    info: '',
     price: '',
     count: ''
   }
 ])
 const drinkList = ref([
   {
-    id: Date.now(),
+    id: 1,
     name: '珍珠奶茶',
-    infomation: '香濃奶茶搭配QQ珍珠',
-    price: '50',
+    info: '香濃奶茶搭配QQ珍珠',
+    price: 60,
     count: 20
   },
   {
-    id: Date.now(),
+    id: 2,
     name: '冬瓜檸檬',
-    infomation: '清新冬瓜配上新鮮檸檬',
-    price: '45',
+    info: '清新冬瓜配上新鮮檸檬',
+    price: 20,
     count: 20
   },
   {
-    id: Date.now(),
+    id: 3,
     name: '冬瓜檸檬',
-    infomation: '清新冬瓜配上新鮮檸檬',
-    price: '45',
+    info: '清新冬瓜配上新鮮檸檬',
+    price: 45,
     count: 20
   },
   {
-    id: Date.now(),
+    id:4,
     name: '翡翠檸檬',
-    infomation: '綠茶與檸檬的完美結合',
-    price: '45',
+    info: '綠茶與檸檬的完美結合',
+    price: 40,
     count: 20
   },
   {
-    id: Date.now(),
+    id: 5,
     name: '四季春茶',
-    infomation: '香醇四季春茶，回甘無比',
-    price: '45',
+    info: '香醇四季春茶，回甘無比',
+    price: 40,
     count: 20
   },
   {
-    id: Date.now(),
+    id:6,
     name: '阿薩姆奶茶',
-    infomation: '阿薩姆紅茶搭配香醇鮮奶',
-    price: '45',
+    info: '阿薩姆紅茶搭配香醇鮮奶',
+    price: 50,
     count: 20
+  },
+  {
+    id:7,
+    name: '檸檬冰茶',
+    info: '檸檬與冰茶的清新組合',
+    price: 45,
+    count: 20
+  },
+  {
+    id:8,
+    name: '芒果綠茶',
+    info: '芒果與綠茶的獨特風味',
+    price: 55,
+    count: 20
+  },
+  {
+    id:9,
+    name: '抹茶拿鐵',
+    info: '抹茶與鮮奶的絕配',
+    price: 85,
+    count: 18
   }
 ])
 const isEditing = ref(false)
@@ -64,10 +86,11 @@ const subtractCount = (item) => {
     item.count = 0
   }
 }
-const editTempItem = (item) => {
+const editTempItem = (item,index) => {
   TempItem.value = { ...item }
-  console.log(TempItem.value)
+  //console.log(TempItem.value)
   isEditing.value = true
+  TempItem.value.index = index
 }
 
 const deleteItem = (item) => {
@@ -76,7 +99,7 @@ const deleteItem = (item) => {
   //console.log(index)
   drinkList.value.splice(index, 1)
 }
-const editdone = () => {
+const editDone = () => {
   const index = drinkList.value.findIndex((del) => del.id === TempItem.value.id)
   drinkList.value[index] = TempItem.value
   TempItem.value = {}
@@ -90,69 +113,72 @@ const cancelEdit = () => {
 
 <template>
   <div>
-    <h1 class="text-center">Drink menu</h1>
+    <h1 class="text-center m-5 ">Drink menu</h1>
 
-    <form class="container">
-      <table class="table text-center table-hover">
+    <form class="container h-100">
+      <table class="table table-hover align-middle">
         <thead>
           <tr>
-            <th>品項</th>
-            <th>說明</th>
-            <th>價格</th>
-            <th>庫存</th>
-            <th>action</th>
+            <th scope="col" width="30%">品項</th>
+            <th scope="col">說明</th>
+            <th scope="col">價格</th>
+            <th scope="col" width="15%" class="text-center">庫存</th> 
+            <th scope="col">刪除</th>
           </tr>
         </thead>
         <tbody v-for="(item, index) in drinkList" :key="item.id">
           <tr :class="{ selected: TempItem.name === item.name }">
             <td>
-              {{ item.name }}
+              
+              <span>{{ item.name }}</span>
+              <button
+                type="button"
+                class="btn btn-sm ms-3 edit-btn bg-white"
+                @click.prevent="editTempItem(item,index)"
+                v-if="TempItem.index!==index"
+              >Edit</button>
+              
+              <div class="input-group" v-else>
+                <input type="text" class="form-control temp-text" v-model="TempItem.name">
+                <button type="button" class="btn border bg-white btn-sm" @click.prevent="editDone">確定</button>
+                <button type="button" class="btn border bg-white btn-sm" @click.prevent="cancelEdit">取消</button>
+              </div>
+             
+              
+            
             </td>
-            <td>{{ item.infomation }}</td>
+            <td>
+              {{ item.info }}
+            </td>
+             
             <td>{{ item.price }}</td>
             <td>
+              <div class="input-group ">
               <button type="button" class="btn btn-sm" @click.prevent="addCount(item)">+</button>
-              <span> <input class="num-input" type="text" v-model="item.count" /></span>
+                <input class="form-control rounded-2 text-center" type="text" v-model="item.count" /> 
               <button
                 type="button"
                 class="btn btn-sm"
                 @click.prevent="subtractCount(item)"
-                :disabled="item.count <= 0"
-              >
+                :disabled="item.count <= 0">
                 -
               </button>
+            </div>
             </td>
+             
             <td>
               <button
                 type="button"
-                class="btn btn-sm border me-3"
-                @click.prevent="editTempItem(item)"
-              >
-                編輯
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger"
+                class="btn btn-sm"
                 @click.prevent="deleteItem(item)"
               >
-                刪除
+              ❌
               </button>
             </td>
           </tr>
         </tbody>
       </table>
-      <div class="row">
-        <div>
-          <div class="edit d-flex gap-3 justify-content-center" v-if="isEditing">
-            <input type="text" v-model="TempItem.name" placeholder="品項" />
-            <input type="text" v-model="TempItem.infomation" placeholder="說明" />
-            <input type="text" v-model="TempItem.price" placeholder="價格" />
-            <input type="text" v-model="TempItem.count" placeholder="庫存" />
-            <button type="button" class="btn border" @click.prevent="editdone">確定</button>
-            <button type="button" class="btn border" @click.prevent="cancelEdit">取消</button>
-          </div>
-        </div>
-      </div>
+      
     </form>
   </div>
 </template>
@@ -171,7 +197,9 @@ header {
   display: block;
   margin: 0 auto 2rem;
 }
-
+.temp-text{
+  color:#999;
+}
 @media (min-width: 1024px) {
   header {
     display: flex;
@@ -192,5 +220,16 @@ header {
 .btn:disabled {
   border: 0;
   opacity: 0.3;
+}
+.edit-btn{
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  color: #888;
+}
+ 
+.edit-btn:hover{
+  background: #fff;
+  border: 1px solid #ccc;
 }
 </style>
