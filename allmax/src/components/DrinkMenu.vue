@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import 'bootstrap'
  
 const TempItem = ref([
@@ -77,6 +77,9 @@ const drinkList = ref([
   }
 ])
 const isEditing = ref(false)
+const errorMessage = ref('')
+const buttonText = computed(() => isExpanded.value ? '還是算了' : '新增品項')
+ 
 const addCount = (item) => {
   item.count++
 }
@@ -92,10 +95,37 @@ const editTempItem = (item,index) => {
   isEditing.value = true
   TempItem.value.index = index
 }
-
+const isExpanded = ref(false)
+const newItem = ref({
+  name: '',
+  info: '',
+  price: '',
+  count: ''
+})
+const addItemToList = () => {
+  if (!newItem.value.name || !newItem.value.info || !newItem.value.price || !newItem.value.count) {
+    errorMessage.value = '欸欸...怎麼能空白啊？'
+    return
+  }
+  errorMessage.value = ''
+  drinkList.value.unshift({
+    id: new Date().getTime(),
+    ...newItem.value
+  })
+  newItem.value = {
+    name: '',
+    info: '',
+    price: '',
+    count: ''
+  }
+  isExpanded.value = false 
+}
+const toggleCollapse = () => {
+  isExpanded.value = !isExpanded.value
+}
 const deleteItem = (item) => {
   //console.log('item', item)
-  const index = drinkList.value.findIndex((del) => del.id === item.id)
+  const index = drinkList.value.findIndex((currenItem) => currenItem.id === item.id)
   //console.log(index)
   drinkList.value.splice(index, 1)
 }
@@ -113,9 +143,50 @@ const cancelEdit = () => {
 
 <template>
   <div>
-    <h1 class="text-center m-5 ">Drink menu</h1>
+    <h1 class="text-center m-5 ">Drink menu Edit List</h1>
 
     <form class="container h-100">
+      <div class="text-end">
+        <button type="button" class="btn btn-outline-secondary"  @click.prevent="toggleCollapse"
+        data-bs-toggle="collapse" href="#collapseExample" role="button" :aria-expanded="isExpanded.toString()" aria-controls="collapseExample">{{buttonText}}</button>
+      </div>
+      <div class="collapse my-3" id="collapseExample">
+        <div class="card-body">
+          <div class="d-flex row  align-items-end justify-content-center">
+            <div class="col-md-3">
+               
+                <label for="">品項</label>
+                <input type="text" v-model="newItem.name" class="form-control"
+                :class="{'is-invalid': errorMessage && !newItem.name}" >
+                 
+            </div>
+            <div class="col-md-3">
+               
+                <label for="">說明</label>
+                <input type="text" v-model="newItem.info" class="form-control"
+                :class="{'is-invalid': errorMessage && !newItem.info}">
+                
+            </div>
+             <div class="col-md-2">
+               
+                <label for="">價格</label>
+                <input type="text" v-model="newItem.price" class="form-control"
+                :class="{'is-invalid': errorMessage && !newItem.price}">
+                
+            </div>
+            <div class="col-md-2">
+              <label for="">庫存</label>
+              <input type="text" v-model="newItem.count" class="form-control"
+              :class="{'is-invalid': errorMessage && !newItem.count}">
+            </div>
+            <div class="col-md-2 d-flex justify-content-center">
+              <button type="button" class="btn btn-outline-secondary px-5" @click.prevent="addItemToList">加入品項</button>
+            </div>
+            <div v-if="errorMessage" class="text-danger mt-2">{{ errorMessage }}</div>
+          </div>
+         
+        </div>
+      </div>
       <table class="table table-hover align-middle">
         <thead>
           <tr>
@@ -123,7 +194,7 @@ const cancelEdit = () => {
              
             <th scope="col">價格</th>
             <th scope="col" width="15%" class="text-center">庫存</th> 
-            <th scope="col">刪除</th>
+            <th scope="col" class="text-end">刪除</th>
           </tr>
         </thead>
         <tbody v-for="(item, index) in drinkList" :key="item.id">
@@ -166,13 +237,12 @@ const cancelEdit = () => {
             </div>
             </td>
              
-            <td>
+            <td class="text-end"> 
               <button
                 type="button"
-                class="btn btn-sm"
+                class="btn btn-sm btn-outline-danger delete-btn"
                 @click.prevent="deleteItem(item)"
-              >
-              ❌
+              >Delete
               </button>
             </td>
           </tr>
@@ -232,4 +302,14 @@ header {
   background: #fff;
   border: 1px solid #ccc;
 }
+.is-invalid {
+  border-color: #dc3545;
+}
+.delete-btn{
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  color: #888;
+}
+ 
 </style>
