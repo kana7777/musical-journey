@@ -1,6 +1,7 @@
 <script setup>
 import 'bootstrap'
 import DrinkMenu from './components/DrinkMenu.vue'
+
 </script>
 
 <template>

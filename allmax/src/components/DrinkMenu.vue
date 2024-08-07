@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import 'bootstrap'
+import { Modal } from 'bootstrap'
  
 const TempItem = ref([
   {
@@ -77,6 +78,7 @@ const drinkList = ref([
   }
 ])
 const isEditing = ref(false)
+const tempDeleteItem = ref(null)
 const errorMessage = ref('')
 const buttonText = computed(() => isExpanded.value ? '還是算了' : '新增品項')
  
@@ -123,11 +125,26 @@ const addItemToList = () => {
 const toggleCollapse = () => {
   isExpanded.value = !isExpanded.value
 }
+
+const openDeleteModal = (item) => {
+  tempDeleteItem.value = item
+}
 const deleteItem = (item) => {
   //console.log('item', item)
   const index = drinkList.value.findIndex((currenItem) => currenItem.id === item.id)
   //console.log(index)
   drinkList.value.splice(index, 1)
+
+
+  // 關掉視窗
+  const modalElement = document.getElementById('deleteModal')
+  const modal = Modal.getInstance(modalElement) || new Modal(modalElement)
+  modal.hide()
+
+  // 清空刪除暫存
+  tempDeleteItem.value = null;
+  
+ 
 }
 const editDone = () => {
   const index = drinkList.value.findIndex((del) => del.id === TempItem.value.id)
@@ -241,7 +258,8 @@ const cancelEdit = () => {
               <button
                 type="button"
                 class="btn btn-sm btn-outline-danger delete-btn"
-                @click.prevent="deleteItem(item)"
+               @click.prevent="openDeleteModal(item)"
+                data-bs-toggle="modal" data-bs-target="#deleteModal"
               >Delete
               </button>
             </td>
@@ -250,6 +268,25 @@ const cancelEdit = () => {
       </table>
       
     </form>
+    <!-- Modal -->
+<div class="modal fade " id="deleteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">刪除品項</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body"  >
+       確定要刪除嗎
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-danger"  @click.prevent="deleteItem(tempDeleteItem)">刪掉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   </div>
 </template>
 
