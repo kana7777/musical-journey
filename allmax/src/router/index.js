@@ -18,8 +18,8 @@ const routes = [
             component: () => import('../views/DrinkMenu.vue'), 
           },
           { 
-            path: '/SignIn',
-            name: 'SignIn',
+            path: '/todo_list',
+            name: 'todo_list',
             component: () => import('../views/SignIn.vue'), 
           },
           

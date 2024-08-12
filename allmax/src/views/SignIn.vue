@@ -1,15 +1,16 @@
 <script setup>
 import { ref } from "vue";
 import axios from "axios";
-
 const site = "https://todolist-api.hexschool.io";
 
-const isSignUp = ref(false);
+
+const isSignUp = ref(false);//註冊/登入
 const signUpEmail = ref("");
 const signUpPassword = ref("");
 const signUpName = ref("");
 const messageSignUp = ref("");
 const isSignedIn = ref(false); //是否已經登入
+const checkUser = ref("");
 
 const signUp = async () => {
   //收集送出資料
@@ -27,6 +28,7 @@ const signUp = async () => {
     messageSignUp.value = "註冊失敗" + error.message;
   }
 };
+
 //登入
 const emailSignIn = ref("");
 const passwordSignIn = ref("");
@@ -36,12 +38,13 @@ const signIn = async () => {
   //收集將送出API的登入資料
   const SignInData = {
     email: emailSignIn.value,
-    password: passwordSignIn.value,
+    password: passwordSignIn.value, 
   };
   try {
     const response = await axios.post(`${site}/users/sign_in`, SignInData);
     token.value = response.data.token;
     isSignedIn.value = true;
+    checkUser.value = response.data.nickname;
   } catch (error) {
     token.value = "失敗";
   }
@@ -50,8 +53,7 @@ const signIn = async () => {
 //驗證
 
 const tokenCheck = ref("");
-const messageCheckOut = ref("");
-const checkUser = ref("");
+const messageCheckOut = ref(""); 
 const checkStatus = ref(false);
 
 const checkOut = async () => {
@@ -70,19 +72,31 @@ const checkOut = async () => {
     checkStatus.value = response.data.status;
     messageCheckOut.value = "驗證成功 UID: " + response.data.uid;
     checkUser.value = response.data.nickname;
+    setTimeout(() => {
+      messageCheckOut.value = "";  
+    }, 3000); 
+ 
   } catch (error) {
     messageCheckOut.value = "失敗";
+    setTimeout(() => {
+      messageCheckOut.value = "";  
+    }, 3000); 
   }
 };
-
+ 
 //登出
-const tokenSignOut = ref("");
+const showModal = ref(false);
+const tokenSignOut = ref(""); 
 const MessageSignOut = ref("");
+const confirmSignOut = () => {
+  signOut();
+  showModal.value = false;
+};
 const signOut = async () => {
   try {
     const response = await axios.post(
       `${site}/users/sign_out`,
-      {},
+      {}, //data
       {
         headers: {
           Authorization: token.value,
@@ -91,6 +105,8 @@ const signOut = async () => {
     );
     if (response.data.status) {
       MessageSignOut.value = response.data.message;
+      isSignedIn.value=false;
+      
     } else {
       MessageSignOut.value = "登出失败";
     }
@@ -98,28 +114,18 @@ const signOut = async () => {
     tokenSignOut.value = "登出錯誤: " + error.message;
   }
 };
+
+//TODO LIST
+ 
+ 
 </script>
 <template>
   <div class="grid-container">
     <div class="container">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        @click.prevent="signOut"
-        v-if="isSignedIn"
-      >
-        登出
-      </button>
-      <span>{{ MessageSignOut }}</span>
-      <button type="button" class="btn btn-secondary" @click="checkOut" v-if="isSignedIn">
-        驗證UID
-      </button>
-      <div class="text">{{ messageCheckOut }}</div>
-      <div v-if="isSignedIn" class="text">哈囉！！{{ checkUser }}！！早安午安晚安</div>
       <div class="row d-flex justify-content-center">
         <!-- 註冊 -->
         <div></div>
-        <div class="col-md-8 mb-4">
+        <div class="col-md-6 mb-4">
           <div class="card">
             <div class="card-body" v-if="!isSignedIn && isSignUp">
               <h1>Register</h1>
@@ -161,7 +167,39 @@ const signOut = async () => {
             </div>
 
             <div v-else-if="isSignedIn">
-              <h2>歡迎回來！</h2>
+              <div class="card-body">
+                <h2>歡迎回來！</h2>
+                <div v-if="isSignedIn" class="text">哈囉！！{{ checkUser }}！！早安午安晚安</div>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  @click.prevent="showModal = true"
+                  v-if="isSignedIn"> 登出</button>
+                
+                <button type="button" class="btn btn-secondary" @click="checkOut" v-if="isSignedIn">
+                  驗證UID
+                </button>
+                <div class="text">{{ messageCheckOut }}</div>
+
+                <!-- list -->
+                <div class="todo-list">
+                  <label for="" class="form-label pe-3">  </label>
+                  <div class="input-group"> 
+                    <input type="text" class="form-control"   placeholder="enter your ...">
+                    <button type="button" class="btn btn-primary"  >加入</button>
+                  </div>
+                  <hr>
+                  <div class="addcontent">
+                    <ul>
+                      <li>
+                        
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              
             </div>
             <div class="card-body" v-else-if="!isSignUp">
               <h1>Sign In</h1>
@@ -191,7 +229,7 @@ const signOut = async () => {
               >
                 Sign In
               </button>
-              <div class="text">{{ token }}</div>
+              <!-- <div class="text">{{ token }}</div> -->
             </div>
             <div class="switch mb-3 text-center" v-if="!isSignedIn">
               <a href="#" @click.prevent="isSignUp = false"> sign In </a>
@@ -211,6 +249,23 @@ const signOut = async () => {
           >
             {{ isSignUp ? "Sign In" : "JOIN NOW" }}
           </button> -->
+        </div>
+      </div>
+    </div>
+    <div v-if="showModal" class="modal" style="display: block; background-color: rgba(0, 0, 0, 0.5);">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">確認登出</h5>
+            <button type="button" class="btn-close" @click="showModal = false"></button>
+          </div>
+          <div class="modal-body">
+            您確定要登出嗎？
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="showModal = false">取消</button>
+            <button type="button" class="btn btn-primary" @click="confirmSignOut">確認</button>
+          </div>
         </div>
       </div>
     </div>
@@ -234,5 +289,17 @@ const signOut = async () => {
 }
 .card {
   border-radius: 16px;
+}
+.toast {
+  background-color: #333;
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  opacity: 0.9;
+  transition: opacity 0.5s ease;
+}
+
+.toast-body {
+  font-size: 16px;
 }
 </style>

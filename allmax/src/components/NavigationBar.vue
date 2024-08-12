@@ -14,7 +14,7 @@
       <li><router-link to="/">Home</router-link></li>
       <li><router-link to="/DrinkMenu">Edit MenuList</router-link></li>
 
-      <li><router-link to="/signIn">SignIn</router-link></li>
+      <li><router-link to="/todo_list">Todo List</router-link></li>
     </ul>
   </nav>
 </template>
