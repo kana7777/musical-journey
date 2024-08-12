@@ -1,46 +1,137 @@
 <template>
-    <nav class="navbar">
-      <div class="logo">Logo</div>
-      <ul class="nav-links">
-        <li><router-link to="/">Home</router-link></li>
-        <li><router-link to="/DrinkMenu">Edit MenuList</router-link></li>
-        
-        <li><router-link to="/orderDrink">Order</router-link></li>
-        <li><router-link to="/logIn">login</router-link></li>
-      </ul>
-    </nav>
-  </template>
-  
-  <style scoped>
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #343a40;
-    padding: 15px 30px;
-  }
-  
-  .logo {
-    font-size: 24px;
-    color: #ffffff;
-  }
-  
+  <nav class="navbar">
+    <div class="logo">LOGO</div>
+    <!--  -->
+    <input type="checkbox" id="menu-toggle" class="menu-toggle" />
+    <!-- 手機版 -->
+    <label for="menu-toggle" class="menu-icon">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </label>
+    <!-- 桌面 -->
+    <ul class="nav-links">
+      <li><router-link to="/">Home</router-link></li>
+      <li><router-link to="/DrinkMenu">Edit MenuList</router-link></li>
+
+      <li><router-link to="/signIn">SignIn</router-link></li>
+    </ul>
+  </nav>
+</template>
+
+<style scoped>
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #343a40;
+  padding: 24px;
+}
+
+.logo {
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.menu-toggle {
+  display: none;
+}
+
+.menu-icon {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  position: relative;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+}
+
+.bar {
+  width: 100%;
+  height: 3px;
+  background-color: #ffffff;
+  margin: 4px 0;
+  transition: 0.4s;
+  position: absolute;
+  left: 0;
+}
+
+.bar:nth-child(1) {
+  top: 0;
+}
+
+.bar:nth-child(2) {
+  top: 38%;
+  transform: translateY(-50%);
+}
+
+.bar:nth-child(3) {
+  bottom: 0;
+}
+
+/* 打开菜单时，将汉堡菜单变成 X */
+.menu-toggle:checked + .menu-icon .bar:nth-child(1) {
+  transform: rotate(45deg);
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.menu-toggle:checked + .menu-icon .bar:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle:checked + .menu-icon .bar:nth-child(3) {
+  transform: rotate(-45deg);
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  transition: max-height 0.3s ease-out;
+}
+
+.nav-links li {
+  margin-left: 20px;
+}
+
+.nav-links a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.nav-links a:hover {
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
   .nav-links {
-    list-style: none;
+    flex-direction: column;
+    width: 100%;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    background-color: #343a40;
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  .nav-links li {
+    margin-left: 0;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .menu-icon {
     display: flex;
   }
-  
-  .nav-links li {
-    margin-left: 20px;
+
+  /* 复选框被选中时显示导航链接 */
+  .menu-toggle:checked ~ .nav-links {
+    max-height: 300px; /* 根据内容高度设置，确保足够容纳所有链接 */
   }
-  
-  .nav-links a {
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 16px;
-  }
-  
-  .nav-links a:hover {
-    text-decoration: underline;
-  }
-  </style>
+}
+</style>

@@ -5,7 +5,7 @@ import Navbar from './components/NavigationBar.vue';
 <template>
   <div id="app">
     <Navbar />
-    <div class="content">
+    <div>
       <router-view />
     </div>
   </div>
@@ -20,8 +20,5 @@ import Navbar from './components/NavigationBar.vue';
   min-height: 100vh;
 }
 
-.content {
-  flex-grow: 1;
-   
-}
+  
 </style>

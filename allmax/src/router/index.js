@@ -18,10 +18,11 @@ const routes = [
             component: () => import('../views/DrinkMenu.vue'), 
           },
           { 
-            path: '/login',
-            name: 'login',
-            component: () => import('../views/LogIn.vue'), 
+            path: '/SignIn',
+            name: 'SignIn',
+            component: () => import('../views/SignIn.vue'), 
           },
+          
         ]
     }
  
