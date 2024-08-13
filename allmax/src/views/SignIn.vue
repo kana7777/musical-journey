@@ -1,10 +1,9 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 const site = "https://todolist-api.hexschool.io";
 
-
-const isSignUp = ref(false);//註冊/登入
+const isSignUp = ref(false); //註冊/登入
 const signUpEmail = ref("");
 const signUpPassword = ref("");
 const signUpName = ref("");
@@ -25,7 +24,12 @@ const signUp = async () => {
       messageSignUp.value = "註冊成功" + response.data.uid;
     }
   } catch (error) {
-    messageSignUp.value = "註冊失敗" + error.message;
+    if (error.response) {
+      console.log("Error Response:", error.response.data);
+      messageSignUp.value = "註冊失敗: " + error.response.data.message;
+    } else {
+      messageSignUp.value = "註冊失敗: " + error.message;
+    }
   }
 };
 
@@ -33,27 +37,44 @@ const signUp = async () => {
 const emailSignIn = ref("");
 const passwordSignIn = ref("");
 const token = ref("");
+const messageSignIn = ref("");
 
 const signIn = async () => {
+  // reset
+  messageSignIn.value = "";
+
   //收集將送出API的登入資料
   const SignInData = {
     email: emailSignIn.value,
-    password: passwordSignIn.value, 
+    password: passwordSignIn.value,
   };
   try {
     const response = await axios.post(`${site}/users/sign_in`, SignInData);
     token.value = response.data.token;
     isSignedIn.value = true;
     checkUser.value = response.data.nickname;
+
+    //登入後立刻cookie
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.cookie = `hexschoolTodo=${token.value}; expires=${tomorrow.toUTCString()}`;
+
+    // 立刻讀入 TodoList
+    getTodo();
   } catch (error) {
-    token.value = "失敗";
+    if (error.response && error.response.data) {
+      const { message } = error.response.data;
+      messageSignIn.value = `登入失敗: ${message}`;
+    } else {
+      messageSignIn.value = "登入失敗: 未知錯誤";
+    }
   }
 };
 
 //驗證
 
 const tokenCheck = ref("");
-const messageCheckOut = ref(""); 
+const messageCheckOut = ref("");
 const checkStatus = ref(false);
 
 const checkOut = async () => {
@@ -73,25 +94,21 @@ const checkOut = async () => {
     messageCheckOut.value = "驗證成功 UID: " + response.data.uid;
     checkUser.value = response.data.nickname;
     setTimeout(() => {
-      messageCheckOut.value = "";  
-    }, 3000); 
- 
+      messageCheckOut.value = "";
+    }, 3000);
   } catch (error) {
     messageCheckOut.value = "失敗";
     setTimeout(() => {
-      messageCheckOut.value = "";  
-    }, 3000); 
+      messageCheckOut.value = "";
+    }, 3000);
   }
 };
- 
+
 //登出
-const showModal = ref(false);
-const tokenSignOut = ref(""); 
+
+const tokenSignOut = ref("");
 const MessageSignOut = ref("");
-const confirmSignOut = () => {
-  signOut();
-  showModal.value = false;
-};
+
 const signOut = async () => {
   try {
     const response = await axios.post(
@@ -105,8 +122,7 @@ const signOut = async () => {
     );
     if (response.data.status) {
       MessageSignOut.value = response.data.message;
-      isSignedIn.value=false;
-      
+      isSignedIn.value = false;
     } else {
       MessageSignOut.value = "登出失败";
     }
@@ -116,8 +132,115 @@ const signOut = async () => {
 };
 
 //TODO LIST
- 
- 
+const todoList = ref({});
+const newTodo = ref("");
+const addTodo = async () => {
+  if (!newTodo.value) return;
+
+  //送出API準備的資料
+  const todo = {
+    content: newTodo.value,
+  };
+  await axios.post(`${site}/todos`, todo, {
+    headers: {
+      Authorization: token.value,
+    },
+  });
+  newTodo.value = ""; //新增完就空值
+  console.log("todo", todo);
+  getTodo();
+};
+
+const getTodo = async () => {
+  const response = await axios.get(`${site}/todos`, {
+    headers: {
+      Authorization: token.value,
+    },
+  });
+  todoList.value = response.data.data; //把回應的資料寫入todoList中
+};
+
+//標示已完成的待辦事項
+const toggleStatus = async (id) => {
+  await axios.patch(
+    `${site}/todos/${id}/toggle`,
+    {},
+    {
+      headers: {
+        Authorization: token.value,
+      },
+    }
+  );
+  getTodo();
+};
+
+//刪除待辦事項 使用axios的delete直接做
+const deleteTodo = async (id) => {
+  await axios.delete(`${site}/todos/${id}`, {
+    headers: {
+      Authorization: token.value,
+    },
+  });
+  getTodo();
+};
+
+//編輯已加入的待辦事項
+
+//宣告一個變數暫存要改的東西
+const tempEditTodo = ref({});
+const isEditing = ref({});
+
+//按下編輯按鈕的功能
+const startEditing = (id) => {
+  isEditing.value[id] = true;
+  tempEditTodo.value[id] = todoList.value.find((todo) => todo.id === id).content;
+  //複製todoList目前的content到tempEditTodo中
+};
+
+//更新待辦事項
+const updateTodoEdit = (id) => {
+  const todoIndex = todoList.value.findIndex((todo) => todo.id === id);
+
+  if (todoIndex !== -1 && tempEditTodo.value[id]) {
+    //更新內容
+    todoList.value[todoIndex].content = tempEditTodo.value[id];
+    console.log("Updated todo:", todoList.value[todoIndex]);
+    isEditing.value[id] = false;
+  }
+};
+//取消編輯
+const cancelEditing = (id) => {
+  isEditing.value[id] = false;
+  delete tempEditTodo.value[id];
+};
+
+//確定編輯的功能
+// const updateTodo = async (id) => {
+//   const todo = todoList.value.find((todo) => todo.id === id);
+//   todo.content = tempEditTodo.value[id];
+//   await axios.put(`${site}/todos/${id}`, todo, {
+//     headers: {
+//       Authorization: token.value,
+//     },
+//   });
+//   getTodo();
+//   tempEditTodo.value = {
+//     ...tempEditTodo.value,
+//     [id]: "",
+//   };
+// };
+
+const TodoToken = document.cookie
+  .split("; ")
+  .find((row) => row.startsWith("hexschoolTodo="))
+  ?.split("=")[1];
+
+onMounted(() => {
+  if (TodoToken) {
+    token.value = TodoToken;
+    getTodo();
+  }
+});
 </script>
 <template>
   <div class="grid-container">
@@ -125,7 +248,7 @@ const signOut = async () => {
       <div class="row d-flex justify-content-center">
         <!-- 註冊 -->
         <div></div>
-        <div class="col-md-6 mb-4">
+        <div class="col-md-7 mb-4">
           <div class="card">
             <div class="card-body" v-if="!isSignedIn && isSignUp">
               <h1>Register</h1>
@@ -163,43 +286,125 @@ const signOut = async () => {
               >
                 Register
               </button>
-              <div class="text">{{ messageSignUp }}</div>
+              <div
+                v-if="!isSignedIn && messageSignUp"
+                class="text-center alert alert-danger my-3"
+              >
+                {{ messageSignUp }}
+              </div>
             </div>
 
             <div v-else-if="isSignedIn">
               <div class="card-body">
-                <h2>歡迎回來！</h2>
-                <div v-if="isSignedIn" class="text">哈囉！！{{ checkUser }}！！早安午安晚安</div>
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  @click.prevent="showModal = true"
-                  v-if="isSignedIn"> 登出</button>
-                
-                <button type="button" class="btn btn-secondary" @click="checkOut" v-if="isSignedIn">
-                  驗證UID
-                </button>
-                <div class="text">{{ messageCheckOut }}</div>
+                <div>
+                  <h3>hello! {{ checkUser }}</h3>
+                  <div class="text-end">
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm me-3"
+                      @click="checkOut"
+                      v-if="isSignedIn"
+                    >
+                      驗證UID
+                    </button>
 
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      @click.prevent="signOut"
+                      v-if="isSignedIn"
+                    >
+                      登出
+                    </button>
+                    <div class="text">{{ messageCheckOut }}</div>
+                  </div>
+                </div>
                 <!-- list -->
                 <div class="todo-list">
-                  <label for="" class="form-label pe-3">  </label>
-                  <div class="input-group"> 
-                    <input type="text" class="form-control"   placeholder="enter your ...">
-                    <button type="button" class="btn btn-primary"  >加入</button>
+                  <label for="" class="form-label pe-3"> </label>
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="write something ..."
+                      v-model="newTodo"
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      @click.prevent="addTodo"
+                    >
+                      Add Task
+                    </button>
                   </div>
-                  <hr>
-                  <div class="addcontent">
-                    <ul>
-                      <li>
-                        
+                  <hr />
+                  <div class="list-content">
+                    <ul v-for="todo in todoList" :key="todo.id" class="list-group">
+                      <li class="list-group-item border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div class="form-check align-items-center">
+                            <input
+                              type="checkbox"
+                              v-model="todo.status"
+                              class="form-check-input"
+                              @change="toggleStatus(todo.id)"
+                            />
+                            <label
+                              class="form-check-label"
+                              :class="{ 'todo-completed': todo.status }"
+                              v-if="!isEditing[todo.id]"
+                            >
+                              {{ todo.content }}</label
+                            >
+                            <input
+                              class="form-control form-control-sm"
+                              v-if="isEditing[todo.id]"
+                              type="text"
+                              v-model="tempEditTodo[todo.id]"
+                              @blur="updateTodoEdit(todo.id)"
+                              @keyup.enter="updateTodoEdit(todo.id)"
+                              placeholder="Edit todo"
+                            />
+                          </div>
+                          <div class="btn-group">
+                            <button
+                              type="button"
+                              class="btn"
+                              @click.prevent="startEditing(todo.id)"
+                              v-if="!isEditing[todo.id]"
+                            >
+                              <img src="@/assets/img/edit.png" alt="Edit" />
+                            </button>
+                            <button
+                              class="btn btn-sm"
+                              v-if="isEditing[todo.id]"
+                              @click.prevent="cancelEditing(todo.id)"
+                            >
+                              <img
+                                src="@/assets/img/CloseCircle.svg"
+                                class="opacity-75"
+                                alt="Edit"
+                              />
+                            </button>
+
+                            <button
+                              type="button"
+                              class="btn"
+                              @click.prevent="deleteTodo(todo.id)"
+                            >
+                              <img
+                                src="@/assets/img/delete.svg"
+                                class="opacity-75"
+                                alt="Edit"
+                              />
+                            </button>
+                          </div>
+                        </div>
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
-
-              
             </div>
             <div class="card-body" v-else-if="!isSignUp">
               <h1>Sign In</h1>
@@ -229,7 +434,12 @@ const signOut = async () => {
               >
                 Sign In
               </button>
-              <!-- <div class="text">{{ token }}</div> -->
+              <div
+                v-if="!isSignedIn && messageSignIn"
+                class="text-center alert alert-danger my-3"
+              >
+                {{ messageSignIn }}
+              </div>
             </div>
             <div class="switch mb-3 text-center" v-if="!isSignedIn">
               <a href="#" @click.prevent="isSignUp = false"> sign In </a>
@@ -238,6 +448,8 @@ const signOut = async () => {
             </div>
           </div>
         </div>
+
+        <!-- 註冊成功modal -->
 
         <!-- 登入 -->
 
@@ -249,23 +461,6 @@ const signOut = async () => {
           >
             {{ isSignUp ? "Sign In" : "JOIN NOW" }}
           </button> -->
-        </div>
-      </div>
-    </div>
-    <div v-if="showModal" class="modal" style="display: block; background-color: rgba(0, 0, 0, 0.5);">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">確認登出</h5>
-            <button type="button" class="btn-close" @click="showModal = false"></button>
-          </div>
-          <div class="modal-body">
-            您確定要登出嗎？
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showModal = false">取消</button>
-            <button type="button" class="btn btn-primary" @click="confirmSignOut">確認</button>
-          </div>
         </div>
       </div>
     </div>
@@ -290,16 +485,11 @@ const signOut = async () => {
 .card {
   border-radius: 16px;
 }
-.toast {
-  background-color: #333;
-  color: white;
-  padding: 16px;
-  border-radius: 8px;
-  opacity: 0.9;
-  transition: opacity 0.5s ease;
+button img {
+  width: 16px;
 }
-
-.toast-body {
-  font-size: 16px;
+.todo-completed {
+  text-decoration: line-through;
+  color: gray;
 }
 </style>
