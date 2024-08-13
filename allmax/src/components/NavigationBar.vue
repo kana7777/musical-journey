@@ -1,6 +1,7 @@
 <template>
+  <div class="bg-343">
   <nav class="navbar">
-    <div class="logo">77</div>
+    <!-- <div class="logo">77</div> -->
     <!--  -->
     <input type="checkbox" id="menu-toggle" class="menu-toggle" />
     <!-- 手機版 -->
@@ -10,22 +11,28 @@
       <div class="bar"></div>
     </label>
     <!-- 桌面 -->
-    <ul class="nav-links">
+    <ul class="nav-links mb-0">
       <li><router-link to="/">Home</router-link></li>
       <li><router-link to="/DrinkMenu">Edit MenuList</router-link></li>
 
       <li><router-link to="/todo_list">Todo List <small>(Login Required)</small></router-link></li>
     </ul>
   </nav>
+</div>
 </template>
 
 <style scoped>
+.bg-343{
+  background-color: #343a40;
+}
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background-color: #343a40;
   padding: 24px;
+  margin-bottom: 16px;
+  margin-top: 8px;
 }
 
 .logo {
@@ -121,7 +128,7 @@
 
   .nav-links li {
     margin-left: 0;
-    margin-bottom: 16px;
+    
     text-align: center;
   }
 

@@ -1,19 +1,17 @@
 <script setup>
  
- 
+ import SignIn from '@/views/SignIn.vue';  
 </script>
 
 <template>
   <div> 
     
-      <div class="grid-container">
-        <div class="content">
-          <div class="text">
-            :)
-          </div>
-        </div>
-      </div> 
-      </div>
+    
+     
+        <SignIn />
+       
+   
+  </div>
 </template>
 
 <style scoped>
