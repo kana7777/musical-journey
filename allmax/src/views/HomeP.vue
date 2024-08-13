@@ -9,7 +9,7 @@
       <div class="grid-container">
         <div class="content">
           <div class="text">
-            becky chen
+            :)
           </div>
         </div>
       </div> 

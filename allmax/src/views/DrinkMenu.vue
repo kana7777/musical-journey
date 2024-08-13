@@ -147,8 +147,8 @@ const cancelEdit = () => {
 </script>
 
 <template>
-  <div class="container">
-    <div class="content">
+  <div  >
+    <div  >
       <div>
         <h1 class="text-center m-5 ">Drink menu Edit List</h1>
     
@@ -187,7 +187,7 @@ const cancelEdit = () => {
                   :class="{'is-invalid': errorMessage && !newItem.count}">
                 </div>
                 <div class="col-md-2 d-flex justify-content-center">
-                  <button type="button" class="btn btn-outline-secondary px-5" @click.prevent="addItemToList">加入品項</button>
+                  <button type="button" class="btn btn-outline-secondary  " @click.prevent="addItemToList">加入品項</button>
                 </div>
                 <div v-if="errorMessage" class="text-danger mt-2">{{ errorMessage }}</div>
               </div>
@@ -313,7 +313,7 @@ header {
 
   header .wrapper {
     display: flex;
-    place-items: flex-start;
+    place-items: center;
     flex-wrap: wrap;
   }
 }

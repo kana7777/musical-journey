@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar">
-    <div class="logo">LOGO</div>
+    <div class="logo">77</div>
     <!--  -->
     <input type="checkbox" id="menu-toggle" class="menu-toggle" />
     <!-- 手機版 -->
@@ -14,7 +14,7 @@
       <li><router-link to="/">Home</router-link></li>
       <li><router-link to="/DrinkMenu">Edit MenuList</router-link></li>
 
-      <li><router-link to="/todo_list">Todo List</router-link></li>
+      <li><router-link to="/todo_list">Todo List <small>(Login Required)</small></router-link></li>
     </ul>
   </nav>
 </template>
@@ -69,8 +69,7 @@
 .bar:nth-child(3) {
   bottom: 0;
 }
-
-/* 打开菜单时，将汉堡菜单变成 X */
+ 
 .menu-toggle:checked + .menu-icon .bar:nth-child(1) {
   transform: rotate(45deg);
   top: 50%;
@@ -91,6 +90,7 @@
   list-style: none;
   display: flex;
   transition: max-height 0.3s ease-out;
+  z-index: 100;
 }
 
 .nav-links li {
@@ -129,9 +129,21 @@
     display: flex;
   }
 
-  /* 复选框被选中时显示导航链接 */
+  
   .menu-toggle:checked ~ .nav-links {
-    max-height: 300px; /* 根据内容高度设置，确保足够容纳所有链接 */
+    max-height: 300px; 
   }
+}
+.nav-links a {
+  color: #ffffff;
+  text-decoration: none; /* No underline by default */
+  font-size: 16px;
+  position: relative;
+  transition: 0.3s ease;
+}
+
+.nav-links a:hover {
+  opacity: .75;
+  transition: 0.3s ease;
 }
 </style>

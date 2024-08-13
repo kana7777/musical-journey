@@ -10,6 +10,7 @@ const signUpName = ref("");
 const messageSignUp = ref("");
 const isSignedIn = ref(false); //是否已經登入
 const checkUser = ref("");
+const isSignUpSuccessful = ref(null);
 
 const signUp = async () => {
   //收集送出資料
@@ -21,16 +22,27 @@ const signUp = async () => {
   try {
     const response = await axios.post(`${site}/users/sign_up`, signUpData);
     if (response.data.status) {
-      messageSignUp.value = "註冊成功" + response.data.uid;
+      messageSignUp.value = "Registration Successful" + response.data.uid;
+      isSignUpSuccessful.value = true;
+    } else {
+      messageSignUp.value = "Registration Fail " + response.data.message;
+      isSignUpSuccessful.value = false;
     }
   } catch (error) {
     if (error.response) {
       console.log("Error Response:", error.response.data);
-      messageSignUp.value = "註冊失敗: " + error.response.data.message;
+      messageSignUp.value = "Registration Fail  " + error.response.data.message;
     } else {
-      messageSignUp.value = "註冊失敗: " + error.message;
+      messageSignUp.value = "Registration Fail  " + error.message;
     }
+    isSignUpSuccessful.value = false;
+    
   }
+  // Clear the message after 5 seconds (5000 milliseconds)
+  setTimeout(() => {
+    messageSignUp.value = "";
+    isSignUpSuccessful.value = null;
+  }, 3000);
 };
 
 //登入
@@ -38,7 +50,7 @@ const emailSignIn = ref("");
 const passwordSignIn = ref("");
 const token = ref("");
 const messageSignIn = ref("");
-
+const isSignInInvalid =ref(true)
 const signIn = async () => {
   // reset
   messageSignIn.value = "";
@@ -64,11 +76,16 @@ const signIn = async () => {
   } catch (error) {
     if (error.response && error.response.data) {
       const { message } = error.response.data;
-      messageSignIn.value = `登入失敗: ${message}`;
+      messageSignIn.value = `SignIn Failed: ${message}`;
+      isSignInInvalid.value = false;
     } else {
-      messageSignIn.value = "登入失敗: 未知錯誤";
+      messageSignIn.value = "SignIn Failed";
+      isSignInInvalid.value = false;
     }
   }
+  setTimeout(() => {
+    messageSignIn.value = ""; 
+  }, 3000);
 };
 
 //驗證
@@ -91,13 +108,13 @@ const checkOut = async () => {
       },
     });
     checkStatus.value = response.data.status;
-    messageCheckOut.value = "驗證成功 UID: " + response.data.uid;
+    messageCheckOut.value = "Verification Successful. UID: " + response.data.uid;
     checkUser.value = response.data.nickname;
     setTimeout(() => {
       messageCheckOut.value = "";
     }, 3000);
   } catch (error) {
-    messageCheckOut.value = "失敗";
+    messageCheckOut.value = "Verification fail";
     setTimeout(() => {
       messageCheckOut.value = "";
     }, 3000);
@@ -124,10 +141,10 @@ const signOut = async () => {
       MessageSignOut.value = response.data.message;
       isSignedIn.value = false;
     } else {
-      MessageSignOut.value = "登出失败";
+      MessageSignOut.value = "Signout Failed";
     }
   } catch (error) {
-    tokenSignOut.value = "登出錯誤: " + error.message;
+    tokenSignOut.value = "Signout Failed" + error.message;
   }
 };
 
@@ -214,22 +231,6 @@ const cancelEditing = (id) => {
   delete tempEditTodo.value[id];
 };
 
-//確定編輯的功能
-// const updateTodo = async (id) => {
-//   const todo = todoList.value.find((todo) => todo.id === id);
-//   todo.content = tempEditTodo.value[id];
-//   await axios.put(`${site}/todos/${id}`, todo, {
-//     headers: {
-//       Authorization: token.value,
-//     },
-//   });
-//   getTodo();
-//   tempEditTodo.value = {
-//     ...tempEditTodo.value,
-//     [id]: "",
-//   };
-// };
-
 const TodoToken = document.cookie
   .split("; ")
   .find((row) => row.startsWith("hexschoolTodo="))
@@ -252,12 +253,13 @@ onMounted(() => {
           <div class="card">
             <div class="card-body" v-if="!isSignedIn && isSignUp">
               <h1>Register</h1>
+              <hr>
               <div class="mb-3">
                 <label for="SignupEmail" class="form-label">email:</label>
                 <input
                   type="email"
                   id="SignupEmail"
-                  class="form-control"
+                  class="form-control" 
                   v-model="signUpEmail"
                 />
               </div>
@@ -268,6 +270,7 @@ onMounted(() => {
                   id="SignupPassword"
                   class="form-control"
                   v-model="signUpPassword"
+                   
                 />
               </div>
               <div class="mb-3">
@@ -277,6 +280,7 @@ onMounted(() => {
                   id="signUpName"
                   class="form-control"
                   v-model="signUpName"
+                  
                 />
               </div>
               <button
@@ -287,11 +291,12 @@ onMounted(() => {
                 Register
               </button>
               <div
-                v-if="!isSignedIn && messageSignUp"
-                class="text-center alert alert-danger my-3"
-              >
-                {{ messageSignUp }}
-              </div>
+                  v-if="!isSignedIn && messageSignUp"
+                  class="text-center alert my-3"
+                  :class="{ 'alert-danger': isSignUpSuccessful === false, 'alert-success': isSignUpSuccessful === true }"
+                >
+                  {{ messageSignUp }}
+                </div>
             </div>
 
             <div v-else-if="isSignedIn">
@@ -301,20 +306,20 @@ onMounted(() => {
                   <div class="text-end">
                     <button
                       type="button"
-                      class="btn btn-secondary btn-sm me-3"
+                      class="btn btn-outline-secondary btn-sm me-3"
                       @click="checkOut"
                       v-if="isSignedIn"
                     >
-                      驗證UID
+                    Verify UID
                     </button>
 
                     <button
                       type="button"
-                      class="btn btn-secondary btn-sm"
+                      class="btn  btn-outline-danger btn-sm"
                       @click.prevent="signOut"
                       v-if="isSignedIn"
                     >
-                      登出
+                      Sign Out
                     </button>
                     <div class="text">{{ messageCheckOut }}</div>
                   </div>
@@ -337,6 +342,7 @@ onMounted(() => {
                       Add Task
                     </button>
                   </div>
+                  <h3  class="mt-5">Todo List</h3>
                   <hr />
                   <div class="list-content">
                     <ul v-for="todo in todoList" :key="todo.id" class="list-group">
@@ -406,40 +412,48 @@ onMounted(() => {
                 </div>
               </div>
             </div>
+            
             <div class="card-body" v-else-if="!isSignUp">
               <h1>Sign In</h1>
-              <div class="mb-3">
-                <label for="signInEmail" class="form-label">email:</label>
-                <input
-                  type="email"
-                  id="signInEmail"
-                  class="form-control"
-                  v-model="emailSignIn"
-                />
-              </div>
-              <div class="mb-3">
-                <label for="signInPassword" class="form-label">password:</label>
-                <input
-                  type="password"
-                  id="signInPassword"
-                  class="form-control"
-                  v-model="passwordSignIn"
-                />
-              </div>
+              <hr>
+              <form>
+                <div class="form-group">
+                  <div class="mb-3">
+                    <label for="signInEmail" class="form-label">email:</label>
+                    <input
+                      type="email"
+                      id="signInEmail"
+                      class="form-control"
+                      v-model="emailSignIn"
+                      :class="{ 'is-invalid': !isSignInInvalid }"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="signInPassword" class="form-label">password:</label>
+                    <input
+                      type="password"
+                      id="signInPassword"
+                      class="form-control"
+                      v-model="passwordSignIn"
+                       :class="{ 'is-invalid': !isSignInInvalid }"
+                    />
+                  </div>
 
-              <button
-                type="button"
-                class="btn btn-secondary w-100 btn-lg mt-3"
-                @click="signIn"
-              >
-                Sign In
-              </button>
-              <div
-                v-if="!isSignedIn && messageSignIn"
-                class="text-center alert alert-danger my-3"
-              >
-                {{ messageSignIn }}
-              </div>
+                  <button
+                    type="button"
+                    class="btn btn-secondary w-100 btn-lg mt-3"
+                    @click="signIn"
+                  >
+                    Sign In
+                  </button>
+                  <div
+                    v-if="!isSignedIn && messageSignIn"
+                    class="text-center alert alert-danger my-3"
+                  >
+                    {{ messageSignIn }}
+                  </div>
+                </div>
+              </form>
             </div>
             <div class="switch mb-3 text-center" v-if="!isSignedIn">
               <a href="#" @click.prevent="isSignUp = false"> sign In </a>
@@ -449,10 +463,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- 註冊成功modal -->
-
-        <!-- 登入 -->
-
+         
         <div>
           <!-- <button
             type="button"
@@ -473,7 +484,7 @@ onMounted(() => {
 .grid-container {
   background: #333;
   display: grid;
-  place-items: start end;
+  place-items: center;
   height: 100vh;
 }
 .card-body {
