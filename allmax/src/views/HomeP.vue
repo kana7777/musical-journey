@@ -5,11 +5,8 @@
 
 <template>
   <div> 
-    
-    
+    <div class="grid-container"></div>
      
-        <SignIn />
-       
    
   </div>
 </template>

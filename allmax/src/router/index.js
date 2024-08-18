@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import Home from '../views/HomeP.vue';
  
 const routes = [
@@ -13,12 +13,12 @@ const routes = [
     
     children: [
         { 
-            path: '/drinkMenu',
-            name: 'drinkMenu',
-            component: () => import('../views/DrinkMenu.vue'), 
+          path: 'drinkMenu',
+          name: 'drinkMenu',
+          component: () => import('../views/DrinkMenu.vue'), 
           },
           { 
-            path: '/todo_list',
+            path: 'todo_list',
             name: 'todo_list',
             component: () => import('../views/SignIn.vue'), 
           },
@@ -27,9 +27,8 @@ const routes = [
     }
  
 ];
-
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes,
 });
 
