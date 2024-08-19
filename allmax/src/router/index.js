@@ -22,10 +22,15 @@ const routes = [
             name: 'todo_list',
             component: () => import('../views/SignIn.vue'), 
           },
+          { 
+            path: 'OrderDrink',
+            name: 'OrderDrink',
+            component: () => import('../views/OrderDrink.vue'), 
+          },
           
         ]
     }
- 
+
 ];
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),

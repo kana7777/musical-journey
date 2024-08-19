@@ -14,8 +14,8 @@
     <ul class="nav-links mb-0">
       <li><router-link to="/">Home</router-link></li>
       <li><router-link  to="/homework/drinkMenu">Edit MenuList</router-link></li>
-
       <li><router-link  to="/homework/todo_list">Todo List <small>(Login Required)</small></router-link></li>
+      <li><router-link  to="/homework/OrderDrink">OrderMenu</router-link></li>
     </ul>
   </nav>
 </div>
